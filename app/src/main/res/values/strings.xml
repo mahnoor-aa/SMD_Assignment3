@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="signupbtn">SignUp</string>
+    <string name="login_btn">LogIn</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="enter_username">Enter Username</string>
+    <string name="title_app">Password Manager</string>
+    <string name="username_on_main">Username</string>
+    <string name="add_new_password_btn">Add New Password</string>
+    <string name="add_new_password">Add New Password</string>
+    <string name="enter_url">Enter URL</string>
+    <string name="update_password">Update</string>
+    <string name="cancel_btn">Cancel</string>
+</resources>
