@@ -38,6 +38,16 @@ public class NewPassword extends AppCompatActivity {
                 finish();
             }
         });
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(NewPassword.this, MainActivity2.class);
+                intent.putExtra("USER_ID", userId);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     private void saveContact(long userId)

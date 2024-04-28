@@ -12,4 +12,6 @@
     <string name="enter_url">Enter URL</string>
     <string name="update_password">Update</string>
     <string name="cancel_btn">Cancel</string>
+    <string name="return_to_mainpage">Return to MainPage</string>
+    <string name="log_out">Log-Out</string>
 </resources>

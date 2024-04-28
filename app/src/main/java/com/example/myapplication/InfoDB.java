@@ -84,12 +84,26 @@ public class InfoDB {
 
         long temp = sqLiteDatabase.insert(TABLE_PASSWORDS, null, cv);
         if (temp == -1) {
-            Toast.makeText(context, "Contact not added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Password not added", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(context, "Contact Added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Password Added", Toast.LENGTH_SHORT).show();
         }
     }
 
+    public void insertRecycle(String username, String password, String url,long userId) {
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_RECYCLE_USERNAME, username);
+        cv.put(COLUMN_RECYCLE_PASSWORD, password);
+        cv.put(COLUMN_RECYCLE_URL, url);
+        cv.put(COLUMN_USER_ID_FKR,userId);
+
+        long temp = sqLiteDatabase.insert(TABLE_RECYCLE, null, cv);
+        if (temp == -1) {
+            Toast.makeText(context, "Password not added", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Password Added", Toast.LENGTH_SHORT).show();
+        }
+    }
     public long getUserIdByUsername(String username) {
         SQLiteDatabase db = helper.getReadableDatabase();
         long userId = -1;
@@ -118,20 +132,113 @@ public class InfoDB {
         return userId;
     }
 
-    public void deleteContact(int id)
-    {
-        int rows = sqLiteDatabase.delete(TABLE_PASSWORDS, COLUMN_PASSWORD_ID+"=?", new String[]{id+""});
-        if(rows > 0)
-        {
-            Toast.makeText(context, "Contact deleted successfully", Toast.LENGTH_SHORT).show();
+    public void RestorePassword(int id) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        long userId = -1;
+        String username = "";
+        String password = "";
+        String url = "";
+
+        String[] projection = {
+                COLUMN_USER_ID_FK,
+                COLUMN_RECYCLE_USERNAME,
+                COLUMN_RECYCLE_PASSWORD,
+                COLUMN_RECYCLE_URL
+        };
+
+        String selection = COLUMN_RECYCLE_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(id)};
+
+        Cursor cursor = db.query(
+                TABLE_RECYCLE,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            userId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_USER_ID_FKR));
+            username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECYCLE_USERNAME));
+            password = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECYCLE_PASSWORD));
+            url = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECYCLE_URL));
+            cursor.close();
         }
-        else
-        {
-            Toast.makeText(context, "Contact not deleted", Toast.LENGTH_SHORT).show();
+
+        if (userId != -1) {
+            insert(username, password, url, userId);
+        }
+
+        int rows = db.delete(TABLE_RECYCLE, COLUMN_RECYCLE_ID + "=?", new String[]{String.valueOf(id)});
+        if (rows > 0) {
+            Toast.makeText(context, "Password Restored successfully", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Password not Restored", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void updateContact(int id, String newUsername, String newPassword,String newUrl) {
+    public void deletePassword(int id) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        long userId = -1;
+        String username = "";
+        String password = "";
+        String url = "";
+
+        String[] projection = {
+                COLUMN_USER_ID_FK,
+                COLUMN_PASSWORD_USERNAME,
+                COLUMN_PASSWORD_PASSWORD,
+                COLUMN_PASSWORD_URL
+        };
+
+        String selection = COLUMN_PASSWORD_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(id)};
+
+        Cursor cursor = db.query(
+                TABLE_PASSWORDS,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            userId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_USER_ID_FK));
+            username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD_USERNAME));
+            password = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD_PASSWORD));
+            url = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD_URL));
+            cursor.close();
+        }
+
+        if (userId != -1) {
+            insertRecycle(username, password, url, userId);
+        }
+
+        int rows = db.delete(TABLE_PASSWORDS, COLUMN_PASSWORD_ID + "=?", new String[]{String.valueOf(id)});
+        if (rows > 0) {
+            Toast.makeText(context, "Password deleted successfully", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Password not deleted", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void deletePasswordRecycle(int id){
+        int rows = sqLiteDatabase.delete(TABLE_RECYCLE, COLUMN_RECYCLE_ID+"=?", new String[]{id+""});
+        if(rows > 0)
+        {
+            Toast.makeText(context, "Password deleted successfully", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            Toast.makeText(context, "Password not deleted", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void updatePassword(int id, String newUsername, String newPassword,String newUrl) {
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_PASSWORD_USERNAME, newUsername);
         cv.put(COLUMN_PASSWORD_PASSWORD, newPassword);
@@ -140,17 +247,17 @@ public class InfoDB {
         int rows = sqLiteDatabase.update(TABLE_PASSWORDS, cv, COLUMN_PASSWORD_ID+"=?", new String[]{id+""});
         if(rows>0)
         {
-            Toast.makeText(context, "Contact updated successfully", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Password updated successfully", Toast.LENGTH_SHORT).show();
         }
         else
         {
-            Toast.makeText(context, "Failed to update contact", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Failed to Update Password", Toast.LENGTH_SHORT).show();
         }
     }
 
 
 
-    public ArrayList<Info> readAllContacts(long userId) {
+    public ArrayList<Info> readAllPasswords(long userId) {
         SQLiteDatabase db = helper.getReadableDatabase();
         ArrayList<Info> passwords = new ArrayList<>();
 
@@ -181,6 +288,46 @@ public class InfoDB {
                 String username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD_USERNAME));
                 String password = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD_PASSWORD));
                 String url = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD_URL));
+                Info info = new Info(id,username, password, url);
+                passwords.add(info);
+            }
+            cursor.close();
+        }
+
+        return passwords;
+    }
+
+    public ArrayList<Info> readAllRecyclePasswords(long userId) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        ArrayList<Info> passwords = new ArrayList<>();
+
+        String[] projection = {
+                COLUMN_RECYCLE_ID + " AS _id",
+                COLUMN_RECYCLE_USERNAME,
+                COLUMN_RECYCLE_PASSWORD,
+                COLUMN_RECYCLE_URL
+        };
+
+        String selection = COLUMN_USER_ID_FKR + " = ?";
+        String[] selectionArgs = { String.valueOf(userId) };
+
+
+        Cursor cursor = db.query(
+                TABLE_RECYCLE,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                int id=cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECYCLE_ID));
+                String username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECYCLE_USERNAME));
+                String password = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECYCLE_PASSWORD));
+                String url = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECYCLE_URL));
                 Info info = new Info(id,username, password, url);
                 passwords.add(info);
             }
