@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, MainActivity2.class);
         intent.putExtra("USER_ID", userId);
         startActivity(intent);
+        finish();
     }
 
     @Override
