@@ -3,33 +3,37 @@ package com.example.myapplication;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
+public class RecycleBinAdapter extends RecyclerView.Adapter<RecycleBinAdapter.ViewHolder2>{
 
     DeleteContact parentActivity;
 
     public interface DeleteContact
     {
-        public void onDeleteContact(int index);
-        public void onUpdateContact(int index, String []values);
+        public void onDeletePassword(int index);
     }
 
     ArrayList<Info> passwords;
     Context context;
 
-    public InfoAdapter(Context c, ArrayList<Info> list)
+    public RecycleBinAdapter(Context c, ArrayList<Info> list)
     {
         passwords = list;
         context = c;
@@ -38,15 +42,16 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecycleBinAdapter.ViewHolder2 onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater
                 .from(parent.getContext())
                 .inflate(R.layout.single_password, parent, false);
-        return new ViewHolder(v);
+        return new ViewHolder2(v);
     }
 
+
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecycleBinAdapter.ViewHolder2 holder, int position) {
         holder.tvUsername.setText(passwords.get(position).getUsername());
         holder.tvPassword.setText(passwords.get(position).getPassword());
         holder.tvURL.setText(passwords.get(position).getUrl());
@@ -64,10 +69,10 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
                     public void onClick(DialogInterface dialog, int which) {
                         InfoDB database = new InfoDB(context);
                         database.open();
-                        database.deletePassword(passwords.get(holder.getAdapterPosition()).getId());
+                        database.deletePasswordRecycle(passwords.get(holder.getAdapterPosition()).getId());
                         database.close();
 
-                        parentActivity.onDeleteContact(holder.getAdapterPosition());
+                        parentActivity.onDeletePassword(holder.getAdapterPosition());
                     }
                 });
 
@@ -85,54 +90,35 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
             }
         });
 
-        holder.ivEdit.setOnClickListener(new View.OnClickListener() {
+        holder.ivRestore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog editDialog = new AlertDialog.Builder(context).create();
-                editDialog.setTitle("Edit Contact");
-                View view = LayoutInflater.from(context).inflate(R.layout.edit_layout, null,false);
-                editDialog.setView(view);
-                editDialog.show();
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(holder.itemView.getContext());
+                alertDialog.setMessage("Do you really want to restore");
+                alertDialog.setTitle("Restore Notification");
 
-                EditText etUsername, etPassword,etURL;
-                Button btnUpdate, btnCancel;
-                etUsername = view.findViewById(R.id.eteditUsername);
-
-                etPassword = view.findViewById(R.id.eteditPassword);
-                etURL = view.findViewById(R.id.eteditUrl);
-                btnUpdate = view.findViewById(R.id.btneditUpdate);
-                btnCancel = view.findViewById(R.id.btneditCancel);
-
-                etUsername.setText(passwords.get(holder.getAdapterPosition()).getUsername());
-                etPassword.setText(passwords.get(holder.getAdapterPosition()).getPassword());
-                etURL.setText(passwords.get(holder.getAdapterPosition()).getUrl());
-                btnUpdate.setOnClickListener(new View.OnClickListener() {
+                alertDialog.setPositiveButton("Restore", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         InfoDB database = new InfoDB(context);
                         database.open();
-                        database.updatePassword(passwords.get(holder.getAdapterPosition()).getId(),
-                                etUsername.getText().toString().trim(),
-                                etPassword.getText().toString().trim(),
-                                etURL.getText().toString().trim());
+                        database.RestorePassword(passwords.get(holder.getAdapterPosition()).getId());
                         database.close();
-                        String []updateContact = new String[]{etUsername.getText().toString().trim(),
-                                etPassword.getText().toString().trim(),etURL.getText().toString().trim()};
-                        parentActivity.onUpdateContact(holder.getAdapterPosition(), updateContact);
-                        editDialog.dismiss();
+
+                        parentActivity.onDeletePassword(holder.getAdapterPosition());
                     }
                 });
 
-                btnCancel.setOnClickListener(new View.OnClickListener() {
+                alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
-                        editDialog.dismiss();
+                    public void onClick(DialogInterface dialog, int which) {
+
                     }
                 });
+
+                alertDialog.show();
             }
         });
-
-
     }
 
     @Override
@@ -140,16 +126,17 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
         return passwords.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder
+    public class ViewHolder2 extends RecyclerView.ViewHolder
     {
         TextView tvUsername,tvPassword,tvURL;
-        ImageView ivEdit;
-        public ViewHolder(@NonNull View itemView) {
+        ImageView ivRestore;
+        public ViewHolder2(@NonNull View itemView) {
             super(itemView);
             tvUsername = itemView.findViewById(R.id.tvdisplayUsername);
             tvPassword = itemView.findViewById(R.id.tvdisplayPassword);
             tvURL = itemView.findViewById(R.id.tvdisplayURL);
-            ivEdit = itemView.findViewById(R.id.ivEdit);
+            ivRestore = itemView.findViewById(R.id.ivEdit);
+            ivRestore.setImageResource(R.drawable.ic_restore);
         }
     }
 }

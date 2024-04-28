@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -15,7 +16,8 @@ import java.util.ArrayList;
 
 public class MainActivity2 extends AppCompatActivity implements InfoAdapter.DeleteContact{
 
-    FloatingActionButton fabAdd;
+    FloatingActionButton fabAdd,fabRecycle;
+    Button btnLogout;
     RecyclerView rvPassword;
     InfoAdapter adapter;
     ArrayList<Info> passwords;
@@ -33,7 +35,8 @@ public class MainActivity2 extends AppCompatActivity implements InfoAdapter.Dele
             Toast.makeText(this, "Error: User ID not received", Toast.LENGTH_SHORT).show();
 
         }
-
+        btnLogout=findViewById(R.id.btnBackMain);
+        fabRecycle = findViewById(R.id.fabBin);
         fabAdd = findViewById(R.id.fabAdd);
         rvPassword = findViewById(R.id.rvPasswordDisplay);
         rvPassword.setHasFixedSize(true);
@@ -41,7 +44,7 @@ public class MainActivity2 extends AppCompatActivity implements InfoAdapter.Dele
 
         InfoDB database = new InfoDB(this);
         database.open();
-        passwords = database.readAllContacts(userId);
+        passwords = database.readAllPasswords(userId);
         database.close();
 
         adapter = new InfoAdapter(this, passwords);
@@ -57,6 +60,27 @@ public class MainActivity2 extends AppCompatActivity implements InfoAdapter.Dele
                 finish();
             }
         });
+
+        fabRecycle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity2.this, RecycleBin.class);
+                intent.putExtra("USER_ID", userId);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity2.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+
 
 
     }
